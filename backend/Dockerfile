@@ -13,8 +13,12 @@ EXPOSE 8000
 # create venv, install requirements, and create new user to avoid using Root
 RUN python -m venv /py &&\
     /py/bin/pip install --upgrade pip &&\
+    apk add --update --no-cache postgresql-client &&\
+    apk add --update --no-cache --virtual .tmp-build-deps \
+        build-base postgresql-dev musl-dev &&\
     /py/bin/pip install -r /tmp/requirements.txt &&\
     rm -rf /tmp &&\
+    apk del .tmp-build-deps &&\
     adduser --disabled-password --no-create-home django-user
 
 # Add path to $PATH so to check here first
