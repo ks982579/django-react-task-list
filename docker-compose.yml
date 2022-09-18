@@ -11,3 +11,23 @@ services:
     volumes:
       - ./backend/core:/backend
     command: python manage.py runserver 0.0.0.0:8000
+    environment:
+      - DB_HOST=pgdatabase
+      - DB_NAME=taskdb
+      - DB_USER=devuser
+      - DB_PASSWORD=StrongPassword+1234
+    depends_on:
+      - pgdatabase
+
+  pgdatabase:
+    image: postgres:14.5-alpine3.16
+    volumes:
+      # Create named Volume to persist forever
+      - task-list-pgdata:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=taskdb
+      - POSTGRES_USER=devuser
+      - POSTGRES_PASSWORD=StrongPassword+1234
+
+volumes:
+  task-list-pgdata:
