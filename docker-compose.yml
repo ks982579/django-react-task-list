@@ -22,6 +22,18 @@ services:
     depends_on:
       - pgdatabase
 
+  frontend:
+    build:
+      context: ./frontend
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/frontend
+    #stdin_open: true
+    #tty: true
+    depends_on:
+      - backend
+
   pgdatabase:
     image: postgres:14.5-alpine3.16
     volumes:
