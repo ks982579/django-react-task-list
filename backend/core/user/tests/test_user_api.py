@@ -90,3 +90,83 @@ class PublicUserApiTests(TestCase):
         
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertIn('token', res.data)
+    
+    def test_create_token_bad_email(self):
+        """Test for returning errors instead of tokens for incorrect email credentials"""
+        user_details = {
+            "name": "John Doe",
+            "email": "jdoe@example.com",
+            "password": "DoesNotMatter123",
+        }
+        create_user(**user_details)
+            # Create User for testing
+        payload = {
+            "email": "jdoe@gmail.com",
+            "password": "DoesNotMatter123",
+        } # Incorrect Email Address
+        res = self.client.post(TOKEN_URL, payload)
+
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+            # We should get a 400 BAD REQUEST
+        self.assertNotIn("token", res.data)
+            # We should not get back a "token"
+
+    def test_create_token_no_email(self):
+        """Test for returning errors instead of tokens for no email provided"""
+        user_details = {
+            "name": "John Doe",
+            "email": "jdoe@example.com",
+            "password": "DoesNotMatter123",
+        }
+        create_user(**user_details)
+            # Create User for testing
+        payload = {
+            "email": "",
+            "password": user_details.get("password"),
+        } # NO Email Address provided
+        res = self.client.post(TOKEN_URL, payload)
+
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+            # We should get a 400 BAD REQUEST
+        self.assertNotIn("token", res.data)
+            # We should not get back a "token"
+    
+    def test_create_token_bad_password(self):
+        """Test for returning errors instead of tokens for incorrect password"""
+        user_details = {
+            "name": "John Doe",
+            "email": "jdoe@example.com",
+            "password": "DoesNotMatter123",
+        }
+        create_user(**user_details)
+            # Create User for testing
+        payload = {
+            "email": user_details.get("email"),
+            "password": "Incorrect_Password",
+        } # Incorrect password
+        res = self.client.post(TOKEN_URL, payload)
+
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+            # We should get a 400 BAD REQUEST
+        self.assertNotIn("token", res.data)
+            # We should not get back a "token"
+
+    def test_create_token_bad_password(self):
+        """Test for returning errors instead of tokens for NO password"""
+        user_details = {
+            "name": "John Doe",
+            "email": "jdoe@example.com",
+            "password": "DoesNotMatter123",
+        }
+        create_user(**user_details)
+            # Create User for testing
+        payload = {
+            "email": user_details.get("email"),
+            "password": "",
+        } # NO password provided
+        res = self.client.post(TOKEN_URL, payload)
+
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+            # We should get a 400 BAD REQUEST
+        self.assertNotIn("token", res.data)
+            # We should not get back a "token"
