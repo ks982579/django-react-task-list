@@ -2,6 +2,7 @@
 Tests for the user API.
 """
 
+from re import Match
 from django.test import TestCase
 from django.contrib.auth import get_user_model
 from django.urls import reverse
@@ -11,6 +12,7 @@ from rest_framework import status
 
 # returns full URL path
 CREATE_USER_URL = reverse('user:create-user')
+TOKEN_URL = reverse("user:token")
 
 def create_user(**params):
     """Create and return a new user for TESTING purposes."""
@@ -69,3 +71,22 @@ class PublicUserApiTests(TestCase):
             email=payload['email']
         ).exists()
         self.assertFalse(user_exists)
+    
+    def test_create_token_for_user(self):
+        """Test generate token for valid credentials"""
+        user_details = {
+            'name': 'Teth Adam',
+            'email': 'TA@example.com',
+            'password': "TestPassword1234",
+        }
+        create_user(**user_details)
+            # Create new user with details 
+        payload = {
+            'email': user_details.get("email"),
+            'password': user_details.get("password"),
+        } # Send to endpoint to generate token :)
+        res = self.client.POST(TOKEN_URL, payload)
+            # We should get back a token
+        
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertIn('token', res.data)
