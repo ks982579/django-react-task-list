@@ -12,7 +12,7 @@ from rest_framework import status
 
 # returns full URL path
 CREATE_USER_URL = reverse('user:create-user')
-TOKEN_URL = reverse("user:token")
+TOKEN_URL = reverse("user:create-token")
 
 def create_user(**params):
     """Create and return a new user for TESTING purposes."""
@@ -85,7 +85,7 @@ class PublicUserApiTests(TestCase):
             'email': user_details.get("email"),
             'password': user_details.get("password"),
         } # Send to endpoint to generate token :)
-        res = self.client.POST(TOKEN_URL, payload)
+        res = self.client.post(TOKEN_URL, payload)
             # We should get back a token
         
         self.assertEqual(res.status_code, status.HTTP_200_OK)
