@@ -13,6 +13,7 @@ from rest_framework import status
 # returns full URL path
 CREATE_USER_URL = reverse('user:create-user')
 TOKEN_URL = reverse("user:create-token")
+ME_URL = reverse("user:check-me")
 
 def create_user(**params):
     """Create and return a new user for TESTING purposes."""
@@ -170,3 +171,57 @@ class PublicUserApiTests(TestCase):
             # We should get a 400 BAD REQUEST
         self.assertNotIn("token", res.data)
             # We should not get back a "token"
+
+    def test_retrieve_user_unauthorized(self):
+        """Test authentication is required for users."""
+        res = self.client.get(ME_URL)
+            # Trying to get information about current user, before logging in
+        self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
+            # Expecting to get 401 NOT AUTHORIZED
+
+class PrivateUserApiTests(TestCase):
+    """Test API requests that require authenitcation."""
+    def setUp(self):
+        self.user = create_user(
+            name="Teth Adam",
+            email="TethAdam@example.com",
+            password="Pass1234",
+        )
+        self.client = APIClient()
+        self.client.force_authenticate(user=self.user)
+            # These tests will have user logged in.
+    
+    def test_retrieve_profile_success(self):
+        """Test retrieving profile for logged in user."""
+        res = self.client.get(ME_URL)
+
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertEqual(res.data, {
+            "name": self.user.name,
+            "email": self.user.email,
+        }) # Python matches dictionaries by value
+    
+    def test_POST_me_not_allowed(self):
+        """
+        Test POST is not allowed for the 'me' endpoing.
+        Creating users is done via the 'create-user' endpoint.
+        """
+        res = self.client.post(ME_URL, {})
+
+        self.assertEqual(res.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+    
+    def test_update_user_profile(self):
+        """Test updating the user profile for the authenticated user."""
+        payload = {
+            "name": "Black Adam",
+            "password": "StrongerPassword!$%*753159",
+        }
+        res = self.client.patch(ME_URL, payload)
+            # Do we return the new name?
+        self.user.refresh_from_db()
+
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertEqual(self.user.name, payload.get("name"))
+        # Our Password shouldn't be returned
+        self.assertNotIn("password", res.data)
+        self.assertTrue(self.user.check_password(payload.get("password")))
