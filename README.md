@@ -7,4 +7,6 @@ flowchart TD
 db1[(DataBase)]
 ```
 - User Table
+    - create user [post]
+    - manage user [get, patch, delete]
 - Task table
